@@ -2,6 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import Joi from 'joi';
+
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -22,9 +25,23 @@ const User = mongoose.model(
   })
 );
 
+// Defining a validation for Users database 
+const userSchema = Joi.object({
+  name : Joi.string().max(30).required(),
+  password : Joi.string().min(8).required(),
+}); 
+
+
 // Signup Route
 app.post('/signup', async (req, res) => {
   const { name, password } = req.body;
+
+  // Backed validation before saving 
+  const {error} = userSchema.validate({name, password}); 
+  if(error){
+    return res.status(400).json({message : error.details[0].message }); 
+  }
+  
 
   try {
     const user = new User({ name, password });
