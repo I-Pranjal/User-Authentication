@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Home({Uname}) {
   return (
-    <div className='text-blue-500'>
+    <div className='text-blue-500 bg-pink-300'>
       <h1 className='text-9xl'>
         Welcome 
       </h1>
