@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import Joi from 'joi';
-
+import bcrypt from 'bcrypt' ;
 
 
 const app = express();
@@ -44,7 +44,13 @@ app.post('/signup', async (req, res) => {
   
 
   try {
-    const user = new User({ name, password });
+
+    // Hashing the password 
+      const saltRounds = 10 ; 
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+
+    const user = new User({ name, password: hashedPassword });
     await user.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -57,8 +63,15 @@ app.post('/login', async (req, res) => {
   const { name, password } = req.body;
 
   try {
-    const user = await User.findOne({ name, password });
-    if (user) {
+    const user = await User.findOne({ name });
+    if(!user){
+      return res.status(404).json({message : 'User not found'}); 
+    }
+
+    // Incase, If the user exists, check if the password is correct
+    const isMatch = await bcrypt.compare(password, user.password); 
+
+    if (isMatch) {
       res.status(200).json({ message: 'Login successful' });
     } else {
       res.status(401).json({ message: 'Invalid name or password' });
